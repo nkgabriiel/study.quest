@@ -1,8 +1,6 @@
 package br.mobile.studyquest.controller;
 
-import br.mobile.studyquest.dto.LoginDTO;
-import br.mobile.studyquest.dto.RegisterDTO;
-import br.mobile.studyquest.dto.TokenResponseDTO;
+import br.mobile.studyquest.dto.*;
 import br.mobile.studyquest.model.User;
 import br.mobile.studyquest.security.TokenService;
 import br.mobile.studyquest.service.AuthService;
@@ -32,12 +30,20 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid LoginDTO data) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.email(), data.password());
-
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
-        var token = tokenService.generateToken((User) auth.getPrincipal());
+        User user = (User) auth.getPrincipal();
+        var token = tokenService.generateToken(user);
 
-        return ResponseEntity.ok(new TokenResponseDTO(token));
+        var userDTO = new UserResponseDTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getNickname()
+        );
+
+        return ResponseEntity.ok(new LoginResponseDTO(token, userDTO));
     }
 
     @PostMapping("/register")

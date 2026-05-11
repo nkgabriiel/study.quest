@@ -43,6 +43,10 @@ public class User implements UserDetails {
     @Check(constraints = "age > 0")
     private Integer age;
 
+    public String getNickname() {
+        return this.username;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
@@ -50,7 +54,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.username;
+        return this.email;
     }
 
     @Override
