@@ -36,7 +36,6 @@ public class SubjectService {
         return subjectRepository.save(subject);
     }
 
-
     @Transactional
     public void deleteSubject(Long subjectId, String userEmail) {
         Subject subject = subjectRepository.findById(subjectId)
