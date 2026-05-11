@@ -30,4 +30,15 @@ public class SubjectController {
         String email = authentication.getName();
         return ResponseEntity.ok(subjectService.listMySubjects(email));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        try {
+            subjectService.deleteSubject(id, email);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
