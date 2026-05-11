@@ -31,6 +31,15 @@ public class SubjectController {
         return ResponseEntity.ok(subjectService.listMySubjects(email));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity updateSubject (@PathVariable Long id, @RequestBody SubjectDTO data,
+                                         Authentication authentication) {
+        String email = authentication.getName();
+        Subject updateSubject = subjectService.updateSubject(id, data, email);
+
+        return ResponseEntity.ok(updateSubject);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication authentication) {
         String email = authentication.getName();

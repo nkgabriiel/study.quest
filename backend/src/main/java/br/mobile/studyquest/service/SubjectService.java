@@ -37,6 +37,20 @@ public class SubjectService {
     }
 
     @Transactional
+    public Subject updateSubject (Long id, SubjectDTO data, String userEmail) {
+        Subject subject = subjectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Matéria não encontrada."));
+
+        if(!subject.getUser().getEmail().equals(userEmail)) {
+            throw new IllegalArgumentException("Acesso negado.");
+        }
+        subject.setName(data.name());
+        subject.setPriority(data.priority());
+
+        return subjectRepository.save(subject);
+    }
+
+    @Transactional
     public void deleteSubject(Long subjectId, String userEmail) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new IllegalArgumentException("Matéria não encontrada."));
