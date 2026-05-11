@@ -12,15 +12,17 @@ import { Link } from 'expo-router';
 
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import { useAuth } from '../contexts/AuthContext';
 
 
 export default function LoginScreen() {
+    const { signIn } = useAuth();
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
     const [ isLoading, setIsLoading ] = useState<boolean>(false);
 
-    const handleLogin = (): void => {
+    const handleLogin = async (): Promise<void> => {
         if(!email || !password) {
             Alert.alert('Erro', 'Por favor, preencha todos os campos.');
             return;
@@ -34,11 +36,20 @@ export default function LoginScreen() {
 
         Alert.alert('Sucesso', `Autenticando o usuário: ${email}`)
 
-          setIsLoading(true);
-    setTimeout(() => {
-        setIsLoading(false);
-        Alert.alert('Sucesso', `Autenticando o usuário: ${email}`);
-    }, 2000);
+        setIsLoading(true);
+
+
+        try {
+            await signIn({ email, password });
+
+        } catch (error: any) {
+            console.log("ERRO REAL DO AXIOS: ", error.message, error.response?.data);
+            
+            const errorMessage = error.response?.data?.message || 'Falha ao autenticar. Verifique email e senha.';
+            Alert.alert ('Ops!', errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

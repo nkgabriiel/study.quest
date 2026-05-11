@@ -1,16 +1,29 @@
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { theme } from '../../constants/theme';
 
 export default function TabLayout() {
+  // Esse hook mágico calcula o tamanho das barras do sistema nativo
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#38BDF8', // Ciano brilhante
-        tabBarInactiveTintColor: '#64748B', // Cinza escuro
-        tabBarStyle: styles.tabBar,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textMuted,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            // Adicionamos a margem inferior nativa do Android/iOS para não sobrepor
+            height: 70 + (Platform.OS === 'android' ? insets.bottom : 0),
+            paddingBottom: 12 + (Platform.OS === 'android' ? insets.bottom : 0),
+          }
+        ],
         tabBarLabelStyle: styles.tabBarLabel,
       }}
     >
@@ -37,7 +50,7 @@ export default function TabLayout() {
           tabBarLabel: () => null,
           tabBarIcon: () => (
             <View style={styles.playButton}>
-              <FontAwesome5 name="play" size={20} color="#0F172A" style={{ marginLeft: 4 }} />
+              <FontAwesome5 name="play" size={20} color={theme.colors.background} style={{ marginLeft: 4 }} />
             </View>
           ),
         }}
@@ -63,12 +76,9 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: '#0F172A',
+    backgroundColor: theme.colors.background,
     borderTopWidth: 1,
-    borderTopColor: '#1E293B',
-    height: 70,
-    paddingBottom: 12,
-    paddingTop: 12,
+    borderTopColor: theme.colors.border,
     elevation: 0,
   },
   tabBarLabel: {
@@ -80,11 +90,11 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#38BDF8',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
-    shadowColor: '#38BDF8',
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,

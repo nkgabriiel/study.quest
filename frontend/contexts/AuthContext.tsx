@@ -4,8 +4,10 @@ import { api } from '../services/api';
 
 interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  username: string;
 }
 
 interface AuthContextData {
