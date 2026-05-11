@@ -9,7 +9,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -34,6 +34,8 @@ export default function SubjectsScreen() {
     const [newSubjectName, setNewSubjectName] = useState('');
     const [newSubjectPriority, setNewSubjectPriority] = useState<'ALTA' | 'MEDIA' | 'BAIXA'>('MEDIA');
     const [isCreating, setIsCreating] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
 
     useEffect(() => {
         fetchSubjects();
@@ -50,29 +52,46 @@ export default function SubjectsScreen() {
         }
     };
 
-    const handleCreateSubject = async () => {
-        if (!newSubjectName.trim()) {
-            Alert.alert('Aviso', 'O nome é obrigatório.');
-            return;
-        }
+    const handleOpenEditModal = (subject: Subject) => {
+        setEditingSubject(subject);
+        setNewSubjectName(subject.name);
+        setNewSubjectPriority(subject.priority);
+        setIsModalVisible(true);
+    };
 
-        setIsCreating(true);
+    const handleSaveSubject = async () => {
+        if (!newSubjectName.trim()) return Alert.alert('Aviso', 'Nome obrigatório.');
+
+        setIsSaving(true);
         try {
-            const payload = {
-                name: newSubjectName,
-                priority: newSubjectPriority,
-            };
+            const payload = { name: newSubjectName, priority: newSubjectPriority };
 
-            await api.post('/subjects', payload);
+            if (editingSubject) {
+                await api.put(`/subjects/${editingSubject.id}`, payload);
+            } else {
+                await api.post('/subjects', { ...payload });
+            }
 
-            setNewSubjectName('');
             setIsModalVisible(false);
+            setEditingSubject(null);
             fetchSubjects();
         } catch (error) {
-            Alert.alert('Erro', 'Falha ao criar matéria.');
+            Alert.alert('Erro', 'Falha ao salvar.');
         } finally {
-            setIsCreating(false);
+            setIsSaving(false);
         }
+    };
+
+    const handleDeleteSubject = async (id: number) => {
+        Alert.alert('Apagar', 'Deseja excluir esta matéria?', [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+                text: 'Excluir', style: 'destructive', onPress: async () => {
+                    await api.delete(`/subjects/${id}`);
+                    fetchSubjects();
+                }
+            }
+        ]);
     };
 
     const renderSubjectCard = ({ item }: { item: Subject }) => {
@@ -80,14 +99,29 @@ export default function SubjectsScreen() {
 
         return (
             <View style={styles.card}>
+                <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => handleOpenEditModal(item)}
+                >
+                    <Feather name="edit-2" size={16} color={theme.colors.textMuted} />
+                </TouchableOpacity>
                 <View style={styles.cardHeader}>
                     <Text style={styles.cardTitle}>{item.name}</Text>
                 </View>
 
+
                 <View style={styles.priorityBadge}>
                     <Text style={styles.priorityText}>{priorityLabel[item.priority]}</Text>
                 </View>
+                <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleDeleteSubject(item.id)}
+                >
+                    <Feather name="trash-2" size={18} color={theme.colors.danger} />
+                </TouchableOpacity>
             </View>
+
+
         );
     };
 
@@ -101,7 +135,12 @@ export default function SubjectsScreen() {
 
                 <TouchableOpacity
                     style={styles.addButton}
-                    onPress={() => setIsModalVisible(true)}>
+                    onPress={() => {
+                        setEditingSubject(null);
+                        setNewSubjectName('');
+                        setNewSubjectPriority('MEDIA');
+                        setIsModalVisible(true);
+                    }}>
 
                     <Feather name="plus" size={16} color={theme.colors.primary} />
                     <Text style={styles.addButtonText}>Nova</Text>
@@ -131,7 +170,10 @@ export default function SubjectsScreen() {
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Nova Matéria</Text>
+                        <Text style={styles.modalTitle}>
+                            {editingSubject ? 'Editar Matéria' : 'Nova Matéria'}
+                        </Text>
+
 
                         <TextInput
                             style={styles.input}
@@ -171,13 +213,15 @@ export default function SubjectsScreen() {
 
                             <TouchableOpacity
                                 style={styles.saveButton}
-                                onPress={handleCreateSubject}
+                                onPress={handleSaveSubject}
                                 disabled={isCreating}
                             >
-                                {isCreating ? (
+                                {isSaving ? (
                                     <ActivityIndicator color={theme.colors.background} size="small" />
                                 ) : (
-                                    <Text style={styles.saveButtonText}>Forjar Matéria</Text>
+                                    <Text style={styles.saveButtonText}>
+                                        {editingSubject ? 'Salvar' : 'Forjar Matéria'}
+                                    </Text>
                                 )}
                             </TouchableOpacity>
                         </View>
@@ -233,14 +277,6 @@ const styles = StyleSheet.create({
     listContainer: {
         paddingHorizontal: 24,
         paddingBottom: 100, // Espaço extra para o botão central do layout não tampar o último item
-    },
-    card: {
-        backgroundColor: theme.colors.card,
-        borderRadius: theme.borderRadius.md,
-        padding: 20,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
     },
     cardHeader: {
         flexDirection: 'row',
@@ -352,5 +388,28 @@ const styles = StyleSheet.create({
         color: theme.colors.background,
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    card: {
+        backgroundColor: theme.colors.card,
+        borderRadius: theme.borderRadius.md,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        position: 'relative', // Essencial para o posicionamento absoluto dos ícones
+        minHeight: 120,
+        padding: 20,
+        paddingRight: 45, // Evita que o texto encoste nos botões da direita
+    },
+    editButton: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        zIndex: 10,
+    },
+    deleteButton: {
+        position: 'absolute',
+        bottom: 16,
+        right: 16,
+        zIndex: 10,
     },
 });
