@@ -54,11 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  function signOut() {
+function signOut() {
     SecureStore.deleteItemAsync('studyquest_token');
     SecureStore.deleteItemAsync('studyquest_user');
     setUser(null);
-  }
+}
 
   return (
     <AuthContext.Provider value={{ user, signIn, signOut, isLoading }}>

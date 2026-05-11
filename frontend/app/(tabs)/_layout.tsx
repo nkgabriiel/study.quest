@@ -57,7 +57,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="missions"
+        name="mission"
         options={{
           title: 'Missões',
           tabBarIcon: ({ color }) => <Feather name="target" size={24} color={color} />,

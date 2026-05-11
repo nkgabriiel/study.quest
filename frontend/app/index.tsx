@@ -12,6 +12,7 @@ import { Link } from 'expo-router';
 
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import { theme } from '../constants/theme'; // Importação do nosso tema central
 import { useAuth } from '../contexts/AuthContext';
 
 
@@ -34,10 +35,7 @@ export default function LoginScreen() {
             return;
         }
 
-        Alert.alert('Sucesso', `Autenticando o usuário: ${email}`)
-
         setIsLoading(true);
-
 
         try {
             await signIn({ email, password });
@@ -54,37 +52,37 @@ export default function LoginScreen() {
 
     return (
         <KeyboardAvoidingView
-        style = {styles.container}
-        behavior = {Platform.OS === 'ios' ? 'padding' : 'height'}>
-            <View style = {styles.formContainer}>
-                <Text style = {styles.title}>Study Quest</Text>
-                <Text style = {styles.subtitle}>Sua jornada começa aqui!</Text>
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <View style={styles.formContainer}>
+                <Text style={styles.title}>Study Quest</Text>
+                <Text style={styles.subtitle}>Sua jornada começa aqui!</Text>
 
                 <Input
-                placeholder = "Digite seu email"
-                placeholderTextColor = {"#A0A0A0"}
-                autoCapitalize = 'none'
-                autoCorrect = {false}
-                value = {email}
-                onChangeText = {setEmail}
+                placeholder="Digite seu email"
+                placeholderTextColor={theme.colors.textMuted}
+                autoCapitalize='none'
+                autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
                 />
 
                 <Input
-                placeholder = "Digite sua senha"
-                placeholderTextColor={"#A0A0A0"}
-                secureTextEntry = {true}
-                value = {password}
+                placeholder="Digite sua senha"
+                placeholderTextColor={theme.colors.textMuted}
+                secureTextEntry={true}
+                value={password}
                 onChangeText={setPassword}
                 />
 
                 <Button
-                title = "Entrar"
-                onPress = {handleLogin}
-                isLoading = {isLoading}
+                title="Entrar"
+                onPress={handleLogin}
+                isLoading={isLoading}
                 />
 
                 <Link href="/register" asChild>
-                <Text style = {styles.linkText}>Ainda não tem uma conta? Cadastre-se</Text>
+                <Text style={styles.linkText}>Ainda não tem uma conta? Cadastre-se</Text>
                 </Link>
             </View>
         </KeyboardAvoidingView>
@@ -94,7 +92,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F7F9FC',
+        backgroundColor: theme.colors.background,
     },
     formContainer: {
         flex: 1,
@@ -104,20 +102,20 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: 'bold',
-        color: '#2D3748',
+        color: theme.colors.text,
         marginBottom: 8,
         textAlign: 'center',
     },
     subtitle: {
         fontSize: 16,
-        color: '#718096',
+        color: theme.colors.textMuted,
         marginBottom: 32,
         textAlign: 'center',
     },
     linkText: {
         marginTop: 24,
         textAlign: 'center',
-        color: '#4C51BF',
+        color: theme.colors.primary,
         fontWeight: '600',
         fontSize: 14,
     },
