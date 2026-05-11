@@ -12,32 +12,56 @@ import {
 
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import { theme } from '../constants/theme';
+import { api } from '../services/api';
 
 export default function RegisterScreen() {
-    const [name, setName] = useState<string>('');
+    const [firstName, setfirstName] = useState<string>('');
+    const [lastName, setLastName] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
+    const [age, setAge] = useState<number>();
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const handleRegister = (): void => {
-        if(!name || !email || !password || !confirmPassword) {
+    const handleRegister = async (): Promise<void> => {
+        if(!firstName || !lastName || !username || !age || !email || !password || !confirmPassword) {
             Alert.alert('Erro', 'Preencha todos os campos.');
             return;
         }
 
         if(password !== confirmPassword) {
             Alert.alert('Erro', 'As senhas não coincidem.');
+            return;
         }
 
         setIsLoading(true);
 
-        setTimeout(() => {
-            setIsLoading(false);
-            Alert.alert('Sucesso', 'Conta criada com sucesso!', [
-                {text: 'OK', onPress: () => router.replace('/')}
+        try {
+            const payload = {
+                firstName: firstName,
+                lastName: lastName,
+                username: username,
+                age: age,
+                email: email,
+                password: password
+            };
+
+            await api.post('/auth/register', payload);
+
+            Alert.alert('Sucesso', 'Conta criada! Faça o login para continuar.', [
+                { text: 'OK', onPress: () => router.replace('/') }
             ]);
-        }, 2000);
+        } catch (error: any) {
+    // ADICIONE ESTA LINHA AQUI 👇
+    console.log("ERRO REAL DO AXIOS: ", error.message, error.response?.data);
+
+    const errorMessage = error.response?.data?.message || 'Falha ao conectar com servidor.';
+    Alert.alert('Ops!', errorMessage);
+} finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -55,9 +79,30 @@ export default function RegisterScreen() {
 
             <Input
             placeholder = 'Digite seu nome'
-            value = {name}
-            onChangeText={setName}
+            value = {firstName}
+            onChangeText={setfirstName}
             autoCapitalize = "words"
+            />
+
+             <Input
+            placeholder = 'Digite seu sobrenome'
+            value = {lastName}
+            onChangeText={setLastName}
+            autoCapitalize = "words"
+            />
+
+            <Input
+            placeholder = 'Digite seu apelido'
+            value = {username}
+            onChangeText={setUsername}
+            autoCapitalize = "words"
+            />
+            
+            <Input
+            placeholder = 'Digite sua idade'
+            keyboardType = 'numeric'
+            value = {age?.toString()}
+            onChangeText={(text) => setAge(Number(text))}
             />
             
             <Input
@@ -99,7 +144,7 @@ export default function RegisterScreen() {
  const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: '#F7F9FC'
+            backgroundColor: theme.colors.background
         },
         scrollContent: {
             paddingHorizontal: 24,
@@ -113,18 +158,18 @@ export default function RegisterScreen() {
         title: {
             fontSize: 32,
             fontWeight: 'bold',
-            color: '#2D3748',
+            color: theme.colors.text,
             marginBottom: 8,
         },
         subtitle: {
             fontSize: 16,
-            color: '#718096',
+            color: theme.colors.textMuted,
             textAlign: 'center',
         },
         linkText: {
             marginTop: 24,
             textAlign: 'center',
-            color: '#4C51BF',
+            color: theme.colors.primary,
             fontWeight: '600',
             fontSize: 14,
         },
